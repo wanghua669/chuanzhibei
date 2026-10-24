@@ -43,7 +43,7 @@ export interface BillAnalytics {
 }
 
 export interface FortuneDiagnosis {
-  cyberTitle: string; // 赛博命盘封号，例如：“五行缺钱·疯狂星期四编外护法”
+  cyberTitle: string; // 赛博命盘封号
   fortuneLevel: '大吉·赛博暴富' | '中平·量入为出' | '下下·赛博破产劫' | '超然·极简隐者';
   motto: string; // 毒舌判词 / 灵魂拷问
   deepAnalysis: string; // 命理深度剖析
@@ -63,3 +63,21 @@ export interface LLMConfig {
 }
 
 export type PresetType = 'student' | 'coder' | 'moonlight';
+
+// 软件多模块视图
+export type SoftwareView =
+  | 'cockpit'     // 赛博总控驾驶舱
+  | 'analytics'   // 数据透视与图表工坊
+  | 'chat'        // AI 命理大师实时对话终端
+  | 'ledger'      // 全资产账单明细流水
+  | 'poster'      // 报告与签文海报导出
+  | 'settings';   // 内核引擎与参数配置
+
+// 对话消息结构
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: string;
+  isStreaming?: boolean;
+}
