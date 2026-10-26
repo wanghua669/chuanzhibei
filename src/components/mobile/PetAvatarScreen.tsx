@@ -69,6 +69,7 @@ export const PetAvatarScreen: React.FC<PetAvatarScreenProps> = ({
               scores={scores}
               petName={fortune?.cyberTitle || '赛博小幽 (CyberPet)'}
               onPetClick={() => sound.playSuccess()}
+              triggerAction={merit}
             />
 
             {/* 点击浮动粒子文字 */}

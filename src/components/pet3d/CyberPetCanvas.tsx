@@ -1,22 +1,41 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import type { GLTF } from 'three/addons/loaders/GLTFLoader.js';
 import { FiveDimensionScores } from '../../types';
 import { sound } from '../../services/soundService';
 
-interface CyberPetCanvasProps {
+export interface CyberPetCanvasProps {
   scores: FiveDimensionScores;
   petName?: string;
   onPetClick?: () => void;
+  triggerAction?: string | number;
 }
 
 export const CyberPetCanvas: React.FC<CyberPetCanvasProps> = ({
   scores,
   petName = '赛博小幽 (CyberPet-01)',
   onPetClick,
+  triggerAction,
 }) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [speech, setSpeech] = useState<string>('全息投影已连接。分身机体正基于你的真实消费流水自适应演化中...');
   const [isInteracting, setIsInteracting] = useState(false);
+
+  // 引用动作机触发器，供组件内部及外部联动调用
+  const triggerSpecialActionRef = useRef<(name?: string) => void>(() => {});
+  const updateThemeColorRef = useRef<(colorHex: number) => void>(() => {});
+
+  // 计算当前属性对应的主题色
+  const getThemeColor = (s: FiveDimensionScores) => {
+    if (s.foodWarrior >= 60) return 0xffb703; // 暴食琥珀橙
+    if (s.nightOwl >= 60) return 0xf72585;    // 夜猫激光粉紫
+    if (s.techGeek >= 55) return 0x38bdf8;    // 极客深邃量子青
+    if (s.wealthKeeper >= 60) return 0x10b981;// 守财翡翠绿
+    return 0x00f2fe;                          // 默认冰蓝
+  };
 
   useEffect(() => {
     const container = mountRef.current;
@@ -27,154 +46,67 @@ export const CyberPetCanvas: React.FC<CyberPetCanvasProps> = ({
 
     // 1. 场景与摄像机
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x08090e, 0.08);
+    scene.fog = new THREE.FogExp2(0x08090e, 0.05);
 
-    const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
-    camera.position.set(0, 0.8, 4.4);
+    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+    camera.position.set(0, 0.55, 3.8);
     camera.lookAt(0, 0.1, 0);
 
     // 2. 渲染器 (高动态范围 & 柔和阴影映射)
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance',
+    });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.35;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
 
-    // 3. 顶级专业摄影棚冷暖对比布光 (Key Light 冰蓝 + Rim Light 霓虹紫 + Fill Light 暗蓝)
-    const ambientLight = new THREE.AmbientLight(0x0d1322, 2.8);
+    // 3. 顶级专业摄影棚冷暖对比布光 (Key Light 冰蓝 + Rim Light 霓虹紫 + 地台反射光)
+    const ambientLight = new THREE.AmbientLight(0x0f172a, 2.6);
     scene.add(ambientLight);
 
     // 主聚光灯 (Key Light - 冰蓝高光)
-    const keyLight = new THREE.DirectionalLight(0x00f2fe, 3.2);
-    keyLight.position.set(3, 4, 3);
+    const keyLight = new THREE.DirectionalLight(0x00f2fe, 3.6);
+    keyLight.position.set(3.5, 4.5, 3.5);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.width = 1024;
+    keyLight.shadow.mapSize.height = 1024;
+    keyLight.shadow.bias = -0.001;
     scene.add(keyLight);
 
     // 轮廓背光 (Rim Light - 霓虹粉紫切割边缘光)
-    const rimLight = new THREE.PointLight(0xf72585, 4.5, 12);
-    rimLight.position.set(-3, 2, -2.5);
+    const rimLight = new THREE.PointLight(0xf72585, 4.8, 12);
+    rimLight.position.set(-3.5, 2.5, -2.5);
     scene.add(rimLight);
 
-    // 底部地台反光
-    const groundBounceLight = new THREE.PointLight(0x4facfe, 2.0, 6);
+    // 底部地台反光 (反射冰蓝微晕)
+    const groundBounceLight = new THREE.PointLight(0x00d2ff, 2.4, 6);
     groundBounceLight.position.set(0, -1.2, 0);
     scene.add(groundBounceLight);
 
-    // 根据消费属性决定形态主色调
-    let mainColorHex = 0x00f2fe; // 默认冰蓝
-    let visorColorHex = 0x00f2fe;
-    if (scores.foodWarrior >= 60) {
-      mainColorHex = 0xffb703; // 暴食琥珀橙
-      visorColorHex = 0xff8800;
-    } else if (scores.nightOwl >= 60) {
-      mainColorHex = 0xf72585; // 夜猫激光粉紫
-      visorColorHex = 0x9d4edd;
-    } else if (scores.techGeek >= 55) {
-      mainColorHex = 0x38bdf8; // 极客深邃量子青
-      visorColorHex = 0x00f2fe;
-    } else if (scores.wealthKeeper >= 60) {
-      mainColorHex = 0x10b981; // 守财翡翠绿
-      visorColorHex = 0x34d399;
-    }
+    // 正面辅助微光
+    const frontFillLight = new THREE.DirectionalLight(0xe2e8f0, 1.2);
+    frontFillLight.position.set(0, 2, 4);
+    scene.add(frontFillLight);
 
-    // 4. 组装 3D 赛博机甲分身
-    const petGroup = new THREE.Group();
-    scene.add(petGroup);
+    let currentThemeColor = getThemeColor(scores);
 
-    // 机体外壳 (深色钛合金金属质感)
-    const bodyGeo = new THREE.SphereGeometry(0.72, 36, 36);
-    bodyGeo.scale(1, 0.88, 0.92);
-    const bodyMat = new THREE.MeshStandardMaterial({
-      color: 0x121724,
-      metalness: 0.92,
-      roughness: 0.18,
-    });
-    const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-    petGroup.add(bodyMesh);
-
-    // 面部全息面罩 (曲面半透明激光镜片)
-    const visorGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.22, 36, 1, false, Math.PI * 0.12, Math.PI * 0.76);
-    const visorMat = new THREE.MeshStandardMaterial({
-      color: visorColorHex,
-      emissive: visorColorHex,
-      emissiveIntensity: 1.4,
-      roughness: 0.08,
-      metalness: 0.85,
-    });
-    const visorMesh = new THREE.Mesh(visorGeo, visorMat);
-    visorMesh.rotation.y = Math.PI * 0.12;
-    visorMesh.position.set(0, 0.09, 0.34);
-    petGroup.add(visorMesh);
-
-    // 发光复眼
-    const eyeGeo = new THREE.SphereGeometry(0.065, 16, 16);
-    const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
-    leftEye.position.set(-0.21, 0.09, 0.65);
-    petGroup.add(leftEye);
-
-    const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
-    rightEye.position.set(0.21, 0.09, 0.65);
-    petGroup.add(rightEye);
-
-    // 赛博猫耳机甲接收天线
-    const earGeo = new THREE.ConeGeometry(0.19, 0.46, 24);
-    const earMat = new THREE.MeshStandardMaterial({
-      color: mainColorHex,
-      metalness: 0.88,
-      roughness: 0.25,
-      emissive: mainColorHex,
-      emissiveIntensity: 0.45,
-    });
-
-    const leftEar = new THREE.Mesh(earGeo, earMat);
-    leftEar.position.set(-0.46, 0.68, 0);
-    leftEar.rotation.z = Math.PI * 0.16;
-    petGroup.add(leftEar);
-
-    const rightEar = new THREE.Mesh(earGeo, earMat);
-    rightEar.position.set(0.46, 0.68, 0);
-    rightEar.rotation.z = -Math.PI * 0.16;
-    petGroup.add(rightEar);
-
-    // 胸口微型能量反应炉晶体
-    const reactorGeo = new THREE.OctahedronGeometry(0.18, 0);
-    const reactorMat = new THREE.MeshStandardMaterial({
-      color: mainColorHex,
-      emissive: mainColorHex,
-      emissiveIntensity: 1.8,
-      roughness: 0.1,
-      metalness: 0.9,
-    });
-    const reactorMesh = new THREE.Mesh(reactorGeo, reactorMat);
-    reactorMesh.position.set(0, -0.22, 0.58);
-    petGroup.add(reactorMesh);
-
-    // 动态内层量子发光环
-    const ringGeo1 = new THREE.TorusGeometry(1.08, 0.016, 16, 80);
-    const ringMat1 = new THREE.MeshBasicMaterial({ color: mainColorHex, transparent: true, opacity: 0.85 });
-    const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
-    ring1.rotation.x = Math.PI * 0.35;
-    petGroup.add(ring1);
-
-    // 动态外层逆向光环
-    const ringGeo2 = new THREE.TorusGeometry(1.24, 0.012, 16, 80);
-    const ringMat2 = new THREE.MeshBasicMaterial({ color: 0xf72585, transparent: true, opacity: 0.65 });
-    const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
-    ring2.rotation.y = Math.PI * 0.42;
-    petGroup.add(ring2);
-
-    // 5. 底部全息雷达基座与同心扫描圈
+    // 4. 底部全息雷达基座与旋转扫描光环
     const baseGroup = new THREE.Group();
     scene.add(baseGroup);
 
-    // 悬浮全息底盘网格
-    const floorGeo = new THREE.RingGeometry(0.35, 1.5, 36);
+    // 悬浮全息底盘网格 (贴合于 y = -1.0)
+    const floorGeo = new THREE.RingGeometry(0.3, 1.7, 48);
     const floorMat = new THREE.MeshBasicMaterial({
-      color: mainColorHex,
+      color: currentThemeColor,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.22,
+      opacity: 0.28,
       wireframe: true,
     });
     const floorMesh = new THREE.Mesh(floorGeo, floorMat);
@@ -182,35 +114,163 @@ export const CyberPetCanvas: React.FC<CyberPetCanvasProps> = ({
     floorMesh.position.y = -1.0;
     baseGroup.add(floorMesh);
 
+    // 内层快速扫描光环
+    const innerRingGeo = new THREE.RingGeometry(0.85, 0.92, 48);
+    const innerRingMat = new THREE.MeshBasicMaterial({
+      color: 0x00f2fe,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.6,
+    });
+    const innerRingMesh = new THREE.Mesh(innerRingGeo, innerRingMat);
+    innerRingMesh.rotation.x = Math.PI * 0.5;
+    innerRingMesh.position.y = -0.99;
+    baseGroup.add(innerRingMesh);
+
     // 底座外圈发光圆环
-    const outerRingGeo = new THREE.TorusGeometry(1.5, 0.015, 8, 64);
-    const outerRingMat = new THREE.MeshBasicMaterial({ color: mainColorHex, transparent: true, opacity: 0.5 });
+    const outerRingGeo = new THREE.TorusGeometry(1.7, 0.015, 16, 64);
+    const outerRingMat = new THREE.MeshBasicMaterial({
+      color: currentThemeColor,
+      transparent: true,
+      opacity: 0.7,
+    });
     const outerRingMesh = new THREE.Mesh(outerRingGeo, outerRingMat);
     outerRingMesh.rotation.x = Math.PI * 0.5;
     outerRingMesh.position.y = -1.0;
     baseGroup.add(outerRingMesh);
 
-    // 6. 浮空微光星尘粒子
-    const particleCount = 75;
+    // 5. 浮空微光星尘粒子
+    const particleCount = 80;
     const particleGeo = new THREE.BufferGeometry();
     const posArr = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount * 3; i += 3) {
-      posArr[i] = (Math.random() - 0.5) * 4.5;
-      posArr[i + 1] = (Math.random() - 0.5) * 3.5;
-      posArr[i + 2] = (Math.random() - 0.5) * 4.5;
+      posArr[i] = (Math.random() - 0.5) * 5.0;
+      posArr[i + 1] = Math.random() * 3.5 - 1.0;
+      posArr[i + 2] = (Math.random() - 0.5) * 5.0;
     }
     particleGeo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
     const particleMat = new THREE.PointsMaterial({
-      size: 0.038,
-      color: mainColorHex,
+      size: 0.04,
+      color: currentThemeColor,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.7,
       blending: THREE.AdditiveBlending,
     });
     const particleSystem = new THREE.Points(particleGeo, particleMat);
     scene.add(particleSystem);
 
-    // 7. 3D 旋转与触摸惯性阻尼
+    // 动态换色函数暴露
+    updateThemeColorRef.current = (colorHex: number) => {
+      floorMat.color.setHex(colorHex);
+      outerRingMat.color.setHex(colorHex);
+      particleMat.color.setHex(colorHex);
+    };
+
+    // 6. GLTF 异步加载 RobotExpressive 机械分身模型
+    let mixer: THREE.AnimationMixer | null = null;
+    const actions: Record<string, THREE.AnimationAction> = {};
+    let currentAction: THREE.AnimationAction | null = null;
+    let modelRoot: THREE.Group | null = null;
+
+    const loader = new GLTFLoader();
+    const base = import.meta.env.BASE_URL || './';
+    const modelUrl = base.endsWith('/') ? `${base}models/robot.glb` : `${base}/models/robot.glb`;
+
+    setIsLoading(true);
+    loader.load(
+      modelUrl,
+      (gltf: GLTF) => {
+        const model = gltf.scene;
+        modelRoot = model;
+
+        // 缩放并贴合地台：robot.glb 原高 ~4.8，脚底在 y=0，缩放 0.46 并将 position.y 设为 -1.0
+        const scale = 0.46;
+        model.scale.set(scale, scale, scale);
+        model.position.set(0, -1.0, 0);
+
+        // 增强金属高光与投射阴影
+        model.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const mesh = child as THREE.Mesh;
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            if (mesh.material && (mesh.material as THREE.MeshStandardMaterial).isMeshStandardMaterial) {
+              const mat = mesh.material as THREE.MeshStandardMaterial;
+              mat.roughness = Math.min(mat.roughness, 0.35);
+              mat.metalness = Math.max(mat.metalness, 0.65);
+              mat.needsUpdate = true;
+            }
+          }
+        });
+
+        scene.add(model);
+
+        // 初始化动画机 AnimationMixer
+        mixer = new THREE.AnimationMixer(model);
+
+        // 解析并注册所有内置动作
+        gltf.animations.forEach((clip) => {
+          actions[clip.name] = mixer!.clipAction(clip);
+        });
+
+        // 默认循环播放待机呼吸动作 (Idle)
+        const idleAction = actions['Idle'] || actions['Standing'];
+        if (idleAction) {
+          idleAction.reset();
+          idleAction.play();
+          currentAction = idleAction;
+        }
+
+        // 监听动作完成事件：当特殊动作播放结束后平滑 CrossFade 回到 Idle
+        const onFinished = (e: any) => {
+          const defaultIdle = actions['Idle'] || actions['Standing'];
+          if (defaultIdle && e.action !== defaultIdle) {
+            defaultIdle.reset();
+            defaultIdle.play();
+            e.action.crossFadeTo(defaultIdle, 0.4, true);
+            currentAction = defaultIdle;
+          }
+        };
+        mixer.addEventListener('finished', onFinished);
+
+        setIsLoading(false);
+      },
+      undefined,
+      (err) => {
+        console.error('Failed to load robot.glb:', err);
+        setLoadError('3D 模型载入中断，请检查网络');
+        setIsLoading(false);
+      }
+    );
+
+    // 特殊动作平滑 CrossFade 触发器
+    const triggerSpecialAction = (actionName?: string) => {
+      if (!mixer) return;
+
+      const candidates = ['Dance', 'ThumbsUp', 'Wave', 'Jump', 'Yes'];
+      const targetName =
+        actionName && actions[actionName]
+          ? actionName
+          : candidates[Math.floor(Math.random() * candidates.length)];
+
+      const nextAction = actions[targetName];
+      if (!nextAction) return;
+
+      nextAction.reset();
+      nextAction.setLoop(THREE.LoopOnce, 1);
+      nextAction.clampWhenFinished = true;
+
+      if (currentAction && currentAction !== nextAction) {
+        currentAction.crossFadeTo(nextAction, 0.28, true);
+      }
+      nextAction.play();
+      currentAction = nextAction;
+    };
+
+    triggerSpecialActionRef.current = triggerSpecialAction;
+
+    // 7. 3D 拖动旋转与惯性阻尼
     let isDragging = false;
     let prevMouseX = 0;
     let prevMouseY = 0;
@@ -248,43 +308,36 @@ export const CyberPetCanvas: React.FC<CyberPetCanvasProps> = ({
     window.addEventListener('mouseup', onPointerUp);
     window.addEventListener('touchend', onPointerUp);
 
-    // 8. 循环动画 (呼吸悬浮 + 惯性旋转 + 光环超频)
+    // 8. 帧循环动画渲染 (AnimationMixer Delta + 地台自转 + 粒子升腾)
     let reqId = 0;
-    let clock = new THREE.Clock();
+    const clock = new THREE.Clock();
 
     const animate = () => {
       reqId = requestAnimationFrame(animate);
+      const delta = clock.getDelta();
       const elapsed = clock.getElapsedTime();
 
-      // 有生命力的空闲浮动动画 (Idle Breathing Wave)
-      petGroup.position.y = Math.sin(elapsed * 1.8) * 0.1;
-      petGroup.rotation.z = Math.sin(elapsed * 1.2) * 0.03;
-
-      // 阻尼回弹旋转
-      petGroup.rotation.y += (targetRotationY - petGroup.rotation.y) * 0.075 + 0.0035;
-      petGroup.rotation.x += (targetRotationX - petGroup.rotation.x) * 0.075;
-      targetRotationX = Math.max(-0.35, Math.min(0.35, targetRotationX));
-
-      // 光环与反应炉自转
-      ring1.rotation.z += 0.022;
-      ring2.rotation.x += 0.016;
-      floorMesh.rotation.z += 0.004;
-      outerRingMesh.rotation.z -= 0.006;
-      reactorMesh.rotation.y += 0.035;
-      reactorMesh.rotation.x += 0.02;
-
-      // 粒子缓慢升腾
-      particleSystem.rotation.y = elapsed * 0.03;
-
-      // 眨眼动画
-      const blink = Math.sin(elapsed * 3.5);
-      if (blink > 0.96) {
-        leftEye.scale.y = 0.12;
-        rightEye.scale.y = 0.12;
-      } else {
-        leftEye.scale.y = 1;
-        rightEye.scale.y = 1;
+      // 更新骨骼动画
+      if (mixer) {
+        mixer.update(delta);
       }
+
+      // 阻尼回弹自转
+      if (modelRoot) {
+        modelRoot.rotation.y += (targetRotationY - modelRoot.rotation.y) * 0.08;
+        targetRotationX = Math.max(-0.25, Math.min(0.25, targetRotationX));
+        modelRoot.rotation.x += (targetRotationX - modelRoot.rotation.x) * 0.08;
+      }
+
+      // 全息光环自转与呼吸缩放
+      floorMesh.rotation.z += 0.004;
+      innerRingMesh.rotation.z -= 0.015;
+      outerRingMesh.rotation.z -= 0.006;
+      const pulse = 1 + Math.sin(elapsed * 2.2) * 0.035;
+      innerRingMesh.scale.set(pulse, pulse, 1);
+
+      // 星尘粒子缓慢盘旋
+      particleSystem.rotation.y = elapsed * 0.035;
 
       renderer.render(scene, camera);
     };
@@ -302,6 +355,7 @@ export const CyberPetCanvas: React.FC<CyberPetCanvasProps> = ({
     };
     window.addEventListener('resize', handleResize);
 
+    // 卸载与资源清理 (防止内存泄漏)
     return () => {
       cancelAnimationFrame(reqId);
       window.removeEventListener('resize', handleResize);
@@ -311,32 +365,80 @@ export const CyberPetCanvas: React.FC<CyberPetCanvasProps> = ({
       window.removeEventListener('touchmove', onPointerMove);
       window.removeEventListener('mouseup', onPointerUp);
       window.removeEventListener('touchend', onPointerUp);
+
+      if (mixer) {
+        mixer.stopAllAction();
+        if (modelRoot) mixer.uncacheRoot(modelRoot);
+      }
+
+      scene.traverse((obj: any) => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach((mat: any) => mat.dispose());
+          } else {
+            obj.material.dispose();
+          }
+        }
+      });
+
       if (renderer.domElement && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
       renderer.dispose();
     };
+  }, []); // 仅在容器初次挂载时建立 WebGL 上下文与加载 GLB
+
+  // 属性更新时动态切换地台主题色 (无需销毁重建场景)
+  useEffect(() => {
+    const colorHex = getThemeColor(scores);
+    updateThemeColorRef.current(colorHex);
   }, [scores]);
+
+  // 外部 triggerAction 属性变化响应 (例如投喂功德+1)
+  const isFirstMount = useRef(true);
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    if (triggerAction !== undefined) {
+      triggerSpecialActionRef.current();
+    }
+  }, [triggerAction]);
+
+  // 监听全局 CustomEvent 联动触发
+  useEffect(() => {
+    const handleCustomEvent = (e: any) => {
+      const action = e.detail?.action;
+      triggerSpecialActionRef.current(action);
+    };
+    window.addEventListener('cyberpet:trigger-action', handleCustomEvent);
+    return () => window.removeEventListener('cyberpet:trigger-action', handleCustomEvent);
+  }, []);
 
   // 点击宠物互动反应
   const handleInteract = () => {
-    sound.playMuyu();
+    sound.playSuccess();
     setIsInteracting(true);
     setTimeout(() => setIsInteracting(false), 800);
 
+    // 触发动作机随机动作切换 (Dance, ThumbsUp, Wave, Jump, Yes)
+    triggerSpecialActionRef.current();
+
     const dialogues = [
-      '哔！量子神经核已同步：检测到你今天的消费重心，分身机体正超频响应！',
-      '摸头杀生效！碳水饱腹能量已吸收，今日防破财护盾稳定度 94%！',
-      '感知到宿主心率微动：今晚23:00后务必远离电商大促，保护生命值！',
-      '机甲正在进行 3D 拓扑重构...正在为你净化一笔潜在的冲动消费欲望！',
-      '钛合金结界充能完毕！守护你的每一分结余，下月存钱目标前进 +5%！',
+      '哔！量子神经核已同步：检测到你的实时流水状态，动作模组已超频响应！',
+      '摸头杀触发成功！机械骨骼伺服电机运转正常，今日防破财护盾稳定度 96%！',
+      '感知到宿主心率微动：今晚23:00后务必远离电商大促，保护现金流！',
+      '分身正在执行实时舞步拓扑重构...为你击碎了一笔潜在冲动消费！',
+      '全息钛金结界充能完毕！守护你的每一分结余，下月存钱目标稳步前进！',
     ];
     setSpeech(dialogues[Math.floor(Math.random() * dialogues.length)]);
     if (onPetClick) onPetClick();
   };
 
   // 根据属性评估形态称号与精致微光徽标
-  let petFormTitle = '【均衡钛金形态】';
+  let petFormTitle = '【均衡钛金机甲态】';
   let badgeColor = 'bg-cyan-950/70 text-cyan-300 border-cyan-500/30 glow-cyan-sm';
   if (scores.foodWarrior >= 60) {
     petFormTitle = '【高碳水暴食进化态】';
@@ -376,8 +478,34 @@ export const CyberPetCanvas: React.FC<CyberPetCanvasProps> = ({
         ref={mountRef}
         onClick={handleInteract}
         className="absolute inset-0 z-0 cursor-grab active:cursor-grabbing"
-        title="3D 全息交互：拖动可 360° 旋转，点击互动"
+        title="3D 全息交互：拖动可 360° 旋转，点击触发特殊动作"
       />
+
+      {/* 加载中全息光圈状态提示 */}
+      {isLoading && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#08090e]/85 backdrop-blur-md pointer-events-none">
+          <div className="relative w-16 h-16 flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full border-2 border-cyan-500/20" />
+            <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-cyan-400 animate-spin" />
+            <div className="w-8 h-8 rounded-full border-2 border-transparent border-b-fuchsia-400 animate-spin [animation-direction:reverse]" />
+            <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_10px_#00f2fe]" />
+          </div>
+          <div className="mt-3 font-mono text-[11px] text-cyan-300 tracking-wider flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+            <span>HOLOGRAPHIC QUANTUM LINKING...</span>
+          </div>
+          <div className="text-[10px] text-slate-500 font-mono mt-1">
+            赛博机械骨骼动作序列加载中
+          </div>
+        </div>
+      )}
+
+      {/* 错误提示 */}
+      {loadError && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#08090e]/90 text-rose-400 font-mono text-xs">
+          {loadError}
+        </div>
+      )}
 
       {/* 底部悬浮全息对话舱 */}
       <div
@@ -389,9 +517,9 @@ export const CyberPetCanvas: React.FC<CyberPetCanvasProps> = ({
         <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1 border-b border-white/5 pb-1">
           <span className="text-cyan-400 font-bold flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-            3D HOLOGRAPHIC STAGE // 点击触碰互动
+            3D HOLOGRAPHIC ROBOT // 点击触碰互动
           </span>
-          <span className="text-slate-500 font-mono">拖动旋转 360°</span>
+          <span className="text-slate-500 font-mono">拖动 360° | 触碰跳舞互动</span>
         </div>
         <p className="text-xs text-slate-100 font-medium leading-relaxed mt-0.5">
           “{speech}”
