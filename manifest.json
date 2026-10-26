@@ -1,0 +1,41 @@
+{
+  "@platforms": ["android", "iPhone", "iPad"],
+  "id": "io.dcloud.cyberpet",
+  "name": "CyberPet赛博分身",
+  "version": {
+    "name": "1.0.0",
+    "code": "100"
+  },
+  "description": "基于Three.js与DeepSeek大模型的3D赛博电子宠物与消费数字分身系统",
+  "launch_path": "index.html",
+  "developer": {
+    "name": "wanghua669",
+    "email": "236675884@qq.com"
+  },
+  "permissions": {
+    "Audio": {
+      "description": "访问音频设备"
+    },
+    "Storage": {
+      "description": "访问本地存储"
+    }
+  },
+  "plus": {
+    "splashscreen": {
+      "autoclose": true,
+      "waiting": true
+    },
+    "statusbar": {
+      "immersed": true,
+      "style": "dark"
+    },
+    "distribute": {
+      "android": {
+        "permissions": [
+          "<uses-permission android:name=\"android.permission.INTERNET\"/>",
+          "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>"
+        ]
+      }
+    }
+  }
+}
