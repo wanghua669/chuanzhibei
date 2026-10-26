@@ -75,17 +75,17 @@ export const CourtQuestScreen: React.FC<CourtQuestScreenProps> = ({ analytics, l
   ];
 
   return (
-    <div className="space-y-4 pb-20 font-mono text-xs">
+    <div className="space-y-5 pb-28 font-mono text-xs">
       {/* 顶部二级切换 */}
-      <div className="flex p-1 bg-slate-900 rounded-xl border border-slate-800 text-xs">
+      <div className="flex p-1.5 tech-card text-xs">
         <button
           onClick={() => {
             sound.playClick();
             setActiveSubTab('court');
           }}
-          className={`flex-1 py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all ${
+          className={`flex-1 py-2 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
             activeSubTab === 'court'
-              ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-neon-pink'
+              ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-[0_0_15px_rgba(225,29,72,0.35)]'
               : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -98,9 +98,9 @@ export const CourtQuestScreen: React.FC<CourtQuestScreenProps> = ({ analytics, l
             sound.playClick();
             setActiveSubTab('quest');
           }}
-          className={`flex-1 py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all ${
+          className={`flex-1 py-2 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
             activeSubTab === 'quest'
-              ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-neon-cyan'
+              ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-[0_0_15px_rgba(0,242,254,0.35)]'
               : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -111,24 +111,24 @@ export const CourtQuestScreen: React.FC<CourtQuestScreenProps> = ({ analytics, l
 
       {/* 视图 1: 赛博消费法庭 */}
       {activeSubTab === 'court' && (
-        <div className="space-y-4">
-          <div className="p-3.5 rounded-xl bg-slate-900/90 border border-rose-500/30 space-y-3">
-            <div className="flex items-center justify-between text-xs font-bold text-rose-400">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          <div className="lg:col-span-6 tech-card p-4 space-y-3.5 border-rose-500/25">
+            <div className="flex items-center justify-between text-xs font-bold text-rose-400 pb-2 border-b border-white/5">
               <span className="flex items-center gap-1.5">
                 <Gavel size={15} />
                 消费主义公诉开庭登记
               </span>
-              <span className="text-[10px] text-slate-500">CYBER COURT</span>
+              <span className="text-[10px] font-mono text-slate-500">CYBER COURT</span>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               <div>
                 <label className="text-[10px] text-slate-400 block mb-1">拟购涉案物品</label>
                 <input
                   type="text"
                   value={itemName}
                   onChange={(e) => setItemName(e.target.value)}
-                  className="w-full p-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs focus:outline-none focus:border-rose-400"
+                  className="w-full px-3 py-2 bg-slate-950/70 border border-white/10 rounded-lg text-slate-100 text-xs focus:outline-none focus:border-rose-400 transition-all font-mono"
                 />
               </div>
 
@@ -138,7 +138,7 @@ export const CourtQuestScreen: React.FC<CourtQuestScreenProps> = ({ analytics, l
                   type="number"
                   value={itemPrice}
                   onChange={(e) => setItemPrice(e.target.value)}
-                  className="w-full p-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs focus:outline-none focus:border-rose-400"
+                  className="w-full px-3 py-2 bg-slate-950/70 border border-white/10 rounded-lg text-slate-100 text-xs focus:outline-none focus:border-rose-400 transition-all font-mono"
                 />
               </div>
 
@@ -148,71 +148,81 @@ export const CourtQuestScreen: React.FC<CourtQuestScreenProps> = ({ analytics, l
                   type="text"
                   value={itemReason}
                   onChange={(e) => setItemReason(e.target.value)}
-                  className="w-full p-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs focus:outline-none focus:border-rose-400"
+                  className="w-full px-3 py-2 bg-slate-950/70 border border-white/10 rounded-lg text-slate-100 text-xs focus:outline-none focus:border-rose-400 transition-all font-mono"
                 />
               </div>
 
               <button
                 onClick={handleStartTrial}
                 disabled={isJudging}
-                className="w-full py-2.5 rounded-lg bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold text-xs shadow-neon-pink flex items-center justify-center gap-1.5 active:scale-98 transition-all"
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-xs shadow-[0_0_20px_rgba(225,29,72,0.3)] flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
               >
-                <Gavel size={14} className={isJudging ? 'animate-bounce' : ''} />
+                <Gavel size={15} className={isJudging ? 'animate-bounce' : ''} />
                 <span>{isJudging ? '法官与公诉人激烈辩驳中...' : '启动赛博开庭审判'}</span>
               </button>
             </div>
           </div>
 
           {/* 判决书 */}
-          {verdict && (
-            <div className="p-4 rounded-xl bg-slate-950 border border-rose-500/50 space-y-3 animate-in fade-in">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                <span className="text-xs font-bold text-white">赛博法庭民事裁决书</span>
-                <span
-                  className={`text-[10px] px-2 py-0.5 rounded font-bold ${
-                    verdict.status === '驳回'
-                      ? 'bg-red-950 text-red-300 border border-red-700'
-                      : 'bg-amber-950 text-amber-300 border border-amber-700'
-                  }`}
-                >
-                  【{verdict.status}】
-                </span>
-              </div>
+          <div className="lg:col-span-6">
+            {verdict ? (
+              <div className="tech-card p-4 border-rose-500/40 bg-rose-950/10 space-y-3.5 animate-in fade-in">
+                <div className="flex items-center justify-between pb-2.5 border-b border-white/10">
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Scale size={14} className="text-rose-400" />
+                    赛博法庭民事裁决书
+                  </span>
+                  <span
+                    className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full font-bold shadow-sm ${
+                      verdict.status === '驳回'
+                        ? 'bg-rose-500/20 text-rose-300 border border-rose-400/40'
+                        : 'bg-amber-500/20 text-amber-300 border border-amber-400/40'
+                    }`}
+                  >
+                    【{verdict.status}】
+                  </span>
+                </div>
 
-              <div className="text-slate-300 text-[11px] leading-relaxed">
-                <span className="text-rose-400 font-bold block mb-0.5">[公诉人抗辩]:</span>
-                {verdict.prosecutorArg}
-              </div>
+                <div className="text-slate-300 text-[11px] leading-relaxed">
+                  <span className="text-rose-400 font-bold block mb-1">[公诉人抗辩]:</span>
+                  {verdict.prosecutorArg}
+                </div>
 
-              <div className="text-slate-300 text-[11px] leading-relaxed">
-                <span className="text-cyan-400 font-bold block mb-0.5">[法庭判决结论]:</span>
-                {verdict.judgeRuling}
-              </div>
+                <div className="text-slate-300 text-[11px] leading-relaxed">
+                  <span className="text-cyan-400 font-bold block mb-1">[法庭判决结论]:</span>
+                  {verdict.judgeRuling}
+                </div>
 
-              <div className="p-2.5 rounded bg-rose-950/30 border border-rose-800/40 text-amber-300 text-[11px] font-bold">
-                ⚖️ {verdict.punishment}
+                <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 text-amber-300 text-[11px] font-bold">
+                  ⚖️ {verdict.punishment}
+                </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="tech-card p-8 border-dashed border-white/10 flex flex-col items-center justify-center text-center text-slate-500 gap-2 min-h-[220px]">
+                <Scale size={28} className="opacity-40" />
+                <span className="text-xs">暂无在审案件，输入拟购商品后点击启动审判</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* 视图 2: 地下城战报 & TCG 卡牌 */}
       {activeSubTab === 'quest' && (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {/* 当月生命值 HP 卡片 */}
-          <div className="p-3.5 rounded-xl bg-slate-900/90 border border-cyan-500/30 space-y-2">
+          <div className="tech-card p-4 space-y-2.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-cyan-400 font-bold flex items-center gap-1">
-                <ShieldAlert size={14} />
+              <span className="text-cyan-400 font-bold flex items-center gap-1.5">
+                <ShieldAlert size={15} />
                 现实地下城生存血量 (HP)
               </span>
-              <span className="text-white font-bold">{hpRemaining} / {hpTotal} HP</span>
+              <span className="text-white font-mono font-bold">{hpRemaining} / {hpTotal} HP</span>
             </div>
 
-            <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+            <div className="w-full bg-slate-900/90 h-2.5 rounded-full overflow-hidden p-[1px] border border-white/5">
               <div
-                className={`h-full rounded-full transition-all duration-700 ${
+                className={`h-full rounded-full transition-all duration-700 energy-gauge-striped ${
                   hpRatio > 50
                     ? 'bg-gradient-to-r from-emerald-500 to-cyan-400'
                     : hpRatio > 20
@@ -223,44 +233,46 @@ export const CourtQuestScreen: React.FC<CourtQuestScreenProps> = ({ analytics, l
               />
             </div>
 
-            <div className="flex justify-between text-[10px] text-slate-400">
-              <span>受创总额: -￥{analytics.totalExpense}</span>
+            <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+              <span>受创总额: -￥{analytics.totalExpense.toLocaleString()}</span>
               <span>剩余生存力: {hpRatio}%</span>
             </div>
           </div>
 
           {/* 掉落的 TCG 现实战力卡牌 */}
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             <div className="flex items-center justify-between text-xs font-bold text-white px-1">
-              <span className="flex items-center gap-1 text-fuchsia-400">
-                <Award size={14} />
+              <span className="flex items-center gap-1.5 text-fuchsia-400">
+                <Award size={15} />
                 账单掉落专属 TCG 战斗卡牌
               </span>
-              <span className="text-[10px] text-slate-500">COLLECTIBLES</span>
+              <span className="text-[10px] font-mono text-slate-500">COLLECTIBLES</span>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
               {tcgCards.map((card, i) => (
                 <div
                   key={i}
-                  className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 relative overflow-hidden group hover:border-cyan-400/50 transition-all"
+                  className="tech-card p-4 relative overflow-hidden group hover:border-cyan-400/40 transition-all flex flex-col justify-between"
                 >
-                  <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl ${card.color} opacity-10 rounded-bl-full pointer-events-none`} />
+                  <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl ${card.color} opacity-15 rounded-bl-full pointer-events-none`} />
 
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-bold text-white text-xs">{card.title}</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-fuchsia-300 border border-slate-700 font-bold">
-                      {card.rarity}
-                    </span>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-bold text-white text-xs">{card.title}</span>
+                      <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-white/[0.04] text-fuchsia-300 border border-white/10 font-bold">
+                        {card.rarity}
+                      </span>
+                    </div>
+
+                    <div className="text-[11px] text-slate-300 leading-relaxed mb-3">
+                      {card.effect}
+                    </div>
                   </div>
 
-                  <div className="text-[11px] text-slate-300 leading-relaxed mb-2">
-                    {card.effect}
-                  </div>
-
-                  <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-slate-800/80 font-mono">
-                    <span className="text-slate-500">消耗法力: <span className="text-cyan-400 font-bold">{card.cost}</span></span>
-                    <span className="text-slate-400">已收录于分身卡册</span>
+                  <div className="flex items-center justify-between text-[10px] pt-2 border-t border-white/5 font-mono">
+                    <span className="text-slate-400">消耗法力: <span className="text-cyan-400 font-bold">{card.cost}</span></span>
+                    <span className="text-slate-500">已收录于卡册</span>
                   </div>
                 </div>
               ))}

@@ -117,165 +117,171 @@ export const SmartLedgerScreen: React.FC<SmartLedgerScreenProps> = ({
   );
 
   return (
-    <div className="space-y-4 pb-20 font-mono text-xs">
-      {/* 头部智能无感说明卡 */}
-      <div className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-950/60 to-cyan-950/60 border border-emerald-500/30 space-y-2">
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-emerald-400 font-bold flex items-center gap-1.5">
-            <Receipt size={16} />
-            微信支付无感智能对账中枢
-          </span>
-          <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/50">
-            0 手动敲键
-          </span>
-        </div>
-        <p className="text-[11px] text-slate-300 leading-relaxed">
-          支持微信官方对账单 CSV 极速导入，或复制微信支付通知文本一秒解析，彻底解决手动记账烦恼！
-        </p>
-      </div>
-
-      {/* 状态通知气泡 */}
-      {importStatus && (
-        <div className="p-2.5 rounded-xl bg-emerald-950/90 border border-emerald-500 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-in fade-in">
-          <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
-          <span>{importStatus}</span>
-        </div>
-      )}
-
-      {/* 功能卡 1: 微信官方账单 CSV 一键导入 */}
-      <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2.5">
-        <div className="flex items-center justify-between text-xs font-bold text-white">
-          <span className="flex items-center gap-1.5 text-cyan-400">
-            <FileSpreadsheet size={15} />
-            方式一：同步微信/支付宝官方账单文件
-          </span>
-        </div>
-
-        <p className="text-[10px] text-slate-400 leading-relaxed">
-          手机微信点击：<span className="text-slate-200">【我】→【服务】→【钱包】→【账单】→右上角【常见问题】→【下载账单】</span>，直接导入微信生成的明细文件：
-        </p>
-
-        <label className="w-full py-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold flex items-center justify-center gap-2 cursor-pointer shadow-neon-cyan transition-all text-xs">
-          <Upload size={14} />
-          <span>选择微信导出的 CSV 账单文件 (全自动读入)</span>
-          <input type="file" accept=".csv" onChange={handleCSVUpload} className="hidden" />
-        </label>
-      </div>
-
-      {/* 功能卡 2: 复制微信扣款通知一键识别 */}
-      <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
-        <div className="flex items-center justify-between text-xs font-bold text-white">
-          <span className="flex items-center gap-1.5 text-fuchsia-400">
-            <Sparkles size={15} />
-            方式二：复制微信支付通知文本快速入账
-          </span>
-        </div>
-
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={pasteInput}
-            onChange={(e) => setPasteInput(e.target.value)}
-            placeholder="粘贴微信通知或记账，如: 肯德基 50元 或 瑞幸 9.9"
-            className="flex-1 p-2 bg-slate-950 border border-slate-700 rounded text-slate-100 text-xs focus:outline-none focus:border-fuchsia-400"
-          />
-          <button
-            onClick={handleQuickPaste}
-            className="px-3.5 py-2 rounded bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold text-xs shrink-0 shadow-neon-pink"
-          >
-            智能入账
-          </button>
-        </div>
-      </div>
-
-      {/* 功能卡 3: 微信实时支付流模拟器 (演示杀手锏) */}
-      <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-        <div className="space-y-0.5">
-          <div className="text-xs font-bold text-white flex items-center gap-1.5">
-            <Radio size={14} className={isSimulatingLivePush ? 'text-emerald-400 animate-pulse' : 'text-slate-500'} />
-            <span>模拟微信支付实时流水广播 (Webhook 流)</span>
+    <div className="pb-28 font-mono text-xs">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* 左侧：微信对账导入通道 & 实时流控制台 (5 Cols) */}
+        <div className="lg:col-span-5 space-y-4">
+          {/* 头部智能无感说明卡 */}
+          <div className="tech-card p-4 border-l-4 border-emerald-400">
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                <Receipt size={16} />
+                微信支付无感智能对账中枢
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-500/30">
+                0 手动敲键
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              支持微信官方对账单 CSV 极速导入，或复制微信支付通知文本一秒解析，彻底解决手动记账烦恼！
+            </p>
           </div>
-          <div className="text-[10px] text-slate-400">
-            开启后每隔几秒模拟一笔微信扣款，3D分身与图表动态联动
+
+          {/* 状态通知气泡 */}
+          {importStatus && (
+            <div className="tech-card p-3 border-emerald-500/40 bg-emerald-950/20 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-in fade-in">
+              <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+              <span>{importStatus}</span>
+            </div>
+          )}
+
+          {/* 功能卡 1: 微信官方账单 CSV 一键导入 */}
+          <div className="tech-card p-4 space-y-3">
+            <div className="flex items-center justify-between text-xs font-bold text-white pb-2 border-b border-white/5">
+              <span className="flex items-center gap-1.5 text-cyan-400">
+                <FileSpreadsheet size={15} />
+                方式一：同步微信/支付宝官方账单文件
+              </span>
+            </div>
+
+            <p className="text-[10px] text-slate-400 leading-relaxed">
+              手机微信点击：<span className="text-slate-200">【我】→【服务】→【钱包】→【账单】→右上角【常见问题】→【下载账单】</span>，直接导入微信生成的明细文件：
+            </p>
+
+            <label className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(0,242,254,0.25)] active:scale-95 transition-all text-xs">
+              <Upload size={14} />
+              <span>选择微信导出的 CSV 账单文件 (全自动读入)</span>
+              <input type="file" accept=".csv" onChange={handleCSVUpload} className="hidden" />
+            </label>
           </div>
-        </div>
 
-        <button
-          onClick={() => {
-            sound.playClick();
-            setIsSimulatingLivePush(!isSimulatingLivePush);
-          }}
-          className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
-            isSimulatingLivePush
-              ? 'bg-emerald-950 text-emerald-300 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]'
-              : 'bg-slate-800 text-slate-400 border-slate-700'
-          }`}
-        >
-          {isSimulatingLivePush ? '广播运行中' : '点击开启'}
-        </button>
-      </div>
+          {/* 功能卡 2: 复制微信扣款通知一键识别 */}
+          <div className="tech-card p-4 space-y-3">
+            <div className="flex items-center justify-between text-xs font-bold text-white pb-2 border-b border-white/5">
+              <span className="flex items-center gap-1.5 text-fuchsia-400">
+                <Sparkles size={15} />
+                方式二：复制微信支付通知文本快速入账
+              </span>
+            </div>
 
-      {/* 流水明细列表 */}
-      <div className="space-y-2 pt-2">
-        <div className="flex items-center justify-between px-1">
-          <span className="font-bold text-white text-xs">
-            当前账本流水明细 ({filtered.length}/{records.length})
-          </span>
-          <div className="relative w-36">
-            <Search size={12} className="absolute left-2.5 top-2 text-slate-500" />
-            <input
-              type="text"
-              placeholder="搜索商户..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-7 pr-2 py-1 bg-slate-900 border border-slate-800 rounded text-[11px] text-white focus:outline-none focus:border-cyan-400"
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={pasteInput}
+                onChange={(e) => setPasteInput(e.target.value)}
+                placeholder="粘贴微信通知或记账，如: 肯德基 50元 或 瑞幸 9.9"
+                className="flex-1 px-3 py-2 bg-slate-950/70 border border-white/10 rounded-lg text-slate-100 text-xs focus:outline-none focus:border-fuchsia-400 transition-all font-mono"
+              />
+              <button
+                onClick={handleQuickPaste}
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-xs shrink-0 shadow-[0_0_15px_rgba(247,37,133,0.3)] active:scale-95 transition-all"
+              >
+                智能入账
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-2 max-h-80 overflow-y-auto pr-0.5">
-          {filtered.map((item) => (
-            <div
-              key={item.id}
-              className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between hover:border-slate-700 transition-all"
-            >
-              <div className="space-y-0.5 truncate pr-2">
-                <div className="font-bold text-white text-xs truncate flex items-center gap-1.5">
-                  <span>{item.counterparty}</span>
-                  {item.isMidnight && (
-                    <span className="px-1 py-0.2 rounded bg-fuchsia-950 text-fuchsia-400 text-[9px] border border-fuchsia-800">
-                      深夜
-                    </span>
-                  )}
-                </div>
-                <div className="text-[10px] text-slate-400 flex items-center gap-2">
-                  <span>{item.date.slice(5)} {item.time.slice(0, 5)}</span>
-                  <span className="text-cyan-400">#{item.category}</span>
-                </div>
+          {/* 功能卡 3: 微信实时支付流模拟器 (演示杀手锏) */}
+          <div className="tech-card p-3.5 flex items-center justify-between gap-3">
+            <div className="space-y-0.5">
+              <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                <Radio size={14} className={isSimulatingLivePush ? 'text-emerald-400 animate-pulse' : 'text-slate-500'} />
+                <span>模拟微信支付实时流水广播 (Webhook 流)</span>
               </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <span
-                  className={`font-mono font-bold text-xs ${
-                    item.type === 'income' ? 'text-emerald-400' : 'text-slate-100'
-                  }`}
-                >
-                  {item.type === 'income' ? `+￥${item.amount}` : `-￥${item.amount}`}
-                </span>
-
-                <button
-                  onClick={() => {
-                    sound.playAlert();
-                    onDeleteRecord(item.id);
-                  }}
-                  className="p-1 rounded text-slate-500 hover:text-rose-400"
-                  title="删除"
-                >
-                  <Trash2 size={12} />
-                </button>
+              <div className="text-[10px] text-slate-400">
+                开启后每隔几秒模拟一笔微信扣款，3D分身与图表动态联动
               </div>
             </div>
-          ))}
+
+            <button
+              onClick={() => {
+                sound.playClick();
+                setIsSimulatingLivePush(!isSimulatingLivePush);
+              }}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border shrink-0 ${
+                isSimulatingLivePush
+                  ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
+                  : 'bg-white/[0.04] text-slate-400 border-white/10 hover:border-white/20'
+              }`}
+            >
+              {isSimulatingLivePush ? '广播运行中' : '点击开启'}
+            </button>
+          </div>
+        </div>
+
+        {/* 右侧：流水明细列表监视中枢 (7 Cols) */}
+        <div className="lg:col-span-7 tech-card p-4 space-y-3.5">
+          <div className="flex items-center justify-between pb-2 border-b border-white/5">
+            <span className="font-bold text-white text-xs flex items-center gap-1.5">
+              <Receipt size={14} className="text-cyan-400" />
+              当前账本流水明细 ({filtered.length}/{records.length})
+            </span>
+            <div className="relative w-44">
+              <Search size={12} className="absolute left-2.5 top-2 text-slate-500" />
+              <input
+                type="text"
+                placeholder="搜索商户 / 标签..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-7 pr-2.5 py-1.5 bg-slate-950/70 border border-white/10 rounded-lg text-[11px] text-white focus:outline-none focus:border-cyan-400 transition-all font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2 max-h-[520px] overflow-y-auto pr-1">
+            {filtered.map((item) => (
+              <div
+                key={item.id}
+                className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-cyan-500/30 hover:bg-white/[0.04] transition-all flex items-center justify-between group"
+              >
+                <div className="space-y-0.5 truncate pr-2">
+                  <div className="font-bold text-white text-xs truncate flex items-center gap-1.5">
+                    <span>{item.counterparty}</span>
+                    {item.isMidnight && (
+                      <span className="px-1.5 py-0.2 rounded-full bg-fuchsia-950/80 text-fuchsia-400 text-[9px] border border-fuchsia-700/50">
+                        深夜
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-slate-400 flex items-center gap-2">
+                    <span>{item.date.slice(5)} {item.time.slice(0, 5)}</span>
+                    <span className="text-cyan-400">#{item.category}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <span
+                    className={`font-mono font-bold text-xs ${
+                      item.type === 'income' ? 'text-emerald-400' : 'text-slate-100'
+                    }`}
+                  >
+                    {item.type === 'income' ? `+￥${item.amount}` : `-￥${item.amount}`}
+                  </span>
+
+                  <button
+                    onClick={() => {
+                      sound.playAlert();
+                      onDeleteRecord(item.id);
+                    }}
+                    className="p-1 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-white/[0.04] transition-all"
+                    title="删除"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

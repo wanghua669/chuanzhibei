@@ -4,76 +4,106 @@
 
 :root {
   color-scheme: dark;
+  --bg-deep: #08090e;
+  --bg-card: rgba(16, 20, 31, 0.7);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(0, 242, 254, 0.35);
+  --accent-cyan: #00f2fe;
+  --accent-purple: #7209b7;
+  --accent-pink: #f72585;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: #070a13;
+  background-color: var(--bg-deep);
   color: #e2e8f0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   overflow-x: hidden;
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.12) 0%, transparent 50%),
-    radial-gradient(circle at 100% 100%, rgba(247, 37, 133, 0.08) 0%, transparent 40%),
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.09) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(247, 37, 133, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 0% 50%, rgba(114, 9, 183, 0.05) 0%, transparent 40%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px, 32px 32px;
 }
 
 /* Custom Cyber Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #090d16;
+  background: #090b12;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 3px;
+  background: #1c2235;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #00f2fe;
 }
 
-/* Cyber card corner accents */
-.cyber-box {
+/* 生产级 Dark Tech 磨砂玻璃卡片 */
+.tech-card {
   position: relative;
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 242, 254, 0.2);
-  transition: all 0.3s ease;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.cyber-box:hover {
-  border-color: rgba(0, 242, 254, 0.5);
-  box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
+.tech-card:hover {
+  border-color: rgba(0, 242, 254, 0.25);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.75), 0 0 20px -6px rgba(0, 242, 254, 0.12), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
 }
 
-.cyber-corner {
+/* 科技微角标 */
+.tech-corner {
   position: absolute;
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
+}
+.tech-corner-tl { top: -1px; left: -1px; border-top: 2px solid rgba(0, 242, 254, 0.6); border-left: 2px solid rgba(0, 242, 254, 0.6); }
+.tech-corner-tr { top: -1px; right: -1px; border-top: 2px solid rgba(0, 242, 254, 0.6); border-right: 2px solid rgba(0, 242, 254, 0.6); }
+.tech-corner-bl { bottom: -1px; left: -1px; border-bottom: 2px solid rgba(0, 242, 254, 0.6); border-left: 2px solid rgba(0, 242, 254, 0.6); }
+.tech-corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid rgba(0, 242, 254, 0.6); border-right: 2px solid rgba(0, 242, 254, 0.6); }
+
+/* 动态流动能量槽条纹 */
+.energy-gauge-striped {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 1rem 1rem;
+  animation: energy-stripes 20s linear infinite;
 }
 
-.cyber-corner-tl { top: -1px; left: -1px; border-top: 2px solid #00f2fe; border-left: 2px solid #00f2fe; }
-.cyber-corner-tr { top: -1px; right: -1px; border-top: 2px solid #00f2fe; border-right: 2px solid #00f2fe; }
-.cyber-corner-bl { bottom: -1px; left: -1px; border-bottom: 2px solid #00f2fe; border-left: 2px solid #00f2fe; }
-.cyber-corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid #00f2fe; border-right: 2px solid #00f2fe; }
-
-/* Neon text shadows */
-.text-glow-cyan {
-  text-shadow: 0 0 10px rgba(0, 242, 254, 0.7);
+@keyframes energy-stripes {
+  0% { background-position: 0 0; }
+  100% { background-position: 50rem 0; }
 }
 
-.text-glow-pink {
-  text-shadow: 0 0 10px rgba(247, 37, 133, 0.7);
+/* 克制微发光 */
+.glow-cyan-sm {
+  box-shadow: 0 0 14px -2px rgba(0, 242, 254, 0.4);
 }
-
-.text-glow-amber {
-  text-shadow: 0 0 10px rgba(255, 183, 3, 0.7);
+.glow-pink-sm {
+  box-shadow: 0 0 14px -2px rgba(247, 37, 133, 0.4);
+}
+.glow-amber-sm {
+  box-shadow: 0 0 14px -2px rgba(255, 183, 3, 0.4);
 }

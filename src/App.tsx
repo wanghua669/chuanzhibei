@@ -114,10 +114,10 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#03060d] flex justify-center selection:bg-cyan-500 selection:text-black">
-      {/* 手机移动端主容器 (PC上居中模拟手机旗舰屏，移动端及HBuilder打包后自适应撑满整屏) */}
-      <div className="w-full max-w-md min-h-screen bg-[#070b16] flex flex-col relative shadow-[0_0_50px_rgba(0,0,0,0.8)] border-x border-slate-800/40">
-        {/* 顶部移动端导航 */}
+    <div className="min-h-screen w-full bg-[#08090e] flex flex-col items-center selection:bg-cyan-500 selection:text-black relative">
+      {/* 现代化工业级控制台容器：桌面端宽屏工作台 (max-w-7xl)，移动端及HBuilder打包自适应撑满 */}
+      <div className="w-full max-w-7xl min-h-screen flex flex-col relative px-2.5 sm:px-5 lg:px-8">
+        {/* 顶部现代化控制台导航 */}
         <MobileHeader
           currentPreset={currentPreset}
           onSelectPreset={handleSelectPreset}
@@ -126,7 +126,7 @@ export const App: React.FC = () => {
         />
 
         {/* 核心主滚动内容区 */}
-        <main className="flex-1 overflow-y-auto px-3.5 pt-3">
+        <main className="flex-1 overflow-y-auto pt-3 px-1 sm:px-2">
           {currentTab === 'pet' && (
             <PetAvatarScreen
               analytics={analytics}
@@ -167,7 +167,7 @@ export const App: React.FC = () => {
           )}
         </main>
 
-        {/* 底部移动端原生风格导航栏 */}
+        {/* 底部悬浮毛玻璃 Dock 导航栏 */}
         <BottomNavBar
           currentTab={currentTab}
           onSelectTab={setCurrentTab}

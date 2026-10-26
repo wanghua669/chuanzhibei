@@ -24,8 +24,8 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#070b16]/95 backdrop-blur-lg border-t border-cyan-500/20 pb-[max(env(safe-area-inset-bottom),8px)] pt-1 px-2 select-none">
-      <div className="max-w-md mx-auto flex items-center justify-around">
+    <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[94%] max-w-lg select-none">
+      <div className="bg-[#0e1320]/85 backdrop-blur-2xl border border-white/10 rounded-2xl p-1.5 shadow-[0_16px_40px_-10px_rgba(0,0,0,0.8),0_0_20px_-5px_rgba(0,242,254,0.12)] flex items-center justify-around">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = currentTab === tab.id;
@@ -37,27 +37,31 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
                 sound.playClick();
                 onSelectTab(tab.id);
               }}
-              className={`flex-1 py-1 flex flex-col items-center justify-center relative transition-all ${
-                isActive ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+              className={`flex-1 py-1.5 px-1 rounded-xl flex flex-col items-center justify-center relative transition-all duration-200 group ${
+                isActive
+                  ? 'text-cyan-300 font-bold bg-white/[0.06] shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.02]'
               }`}
             >
               {isActive && (
-                <span className="absolute -top-1 w-8 h-1 rounded-full bg-cyan-400 shadow-[0_0_8px_#00f2fe]" />
+                <span className="absolute -top-1.5 w-6 h-0.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#00f2fe]" />
               )}
 
               <div className="relative">
                 <Icon
-                  size={20}
-                  className={`transition-transform duration-200 ${
-                    isActive ? 'scale-110 drop-shadow-[0_0_8px_rgba(0,242,254,0.6)]' : ''
+                  size={19}
+                  className={`transition-all duration-200 ${
+                    isActive
+                      ? 'scale-110 text-cyan-300 drop-shadow-[0_0_8px_rgba(0,242,254,0.6)]'
+                      : 'text-slate-400 group-hover:text-slate-200'
                   }`}
                 />
                 {tab.badge && (
                   <span
-                    className={`absolute -top-1.5 -right-3 text-[9px] font-mono px-1 py-0.2 rounded-full font-bold ${
+                    className={`absolute -top-1.5 -right-3.5 text-[9px] font-mono px-1.5 py-0.2 rounded-full font-bold shadow-sm ${
                       tab.badge === '3D'
-                        ? 'bg-fuchsia-600 text-white'
-                        : 'bg-slate-800 text-cyan-300 border border-slate-700'
+                        ? 'bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white'
+                        : 'bg-slate-800/90 text-cyan-300 border border-white/10'
                     }`}
                   >
                     {tab.badge}
